@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatApp - Real-Time Messaging</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Nunito', sans-serif;
+        }
+
+        :root {
+            --primary: #4f46e5;
+            --primary-light: #6366f1;
+            --secondary: #10b981;
+            --dark: #1f2937;
+            --light: #f9fafb;
+            --gray: #9ca3af;
+            --success: #059669;
+            --warning: #f59e0b;
+            --error: #ef4444;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+            color: var(--dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            width: 100%;
+        }
+
+        /* Header Styles */
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 15px 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .logo i {
+            margin-right: 10px;
+            color: #fff;
+        }
+
+        .user-controls {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            margin-right: 20px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-light);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid white;
+            color: white;
+        }
+
+        .btn-outline:hover {
+            background: white;
+            color: var(--primary);
+        }
+
+        /* Main Content */
+        .main-content {
+            display: flex;
+            flex: 1;
+            margin-top: 20px;
+            gap: 20px;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 300px;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .sidebar-section {
+            margin-bottom: 25px;
+        }
+
+        .sidebar-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--primary);
+        }
+
+        .room-list {
+            list-style: none;
+        }
+
+        .room-item {
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s;
+        }
+
+        .room-item:hover {
+            background: #f3f4f6;
+        }
+
+        .room-item.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .room-item i {
+            margin-right: 10px;
+        }
+
+        .user-list {
+            list-style: none;
+        }
+
+        .user-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .user-avatar-sm {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: var(--secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-left: auto;
+        }
+
+        .online {
+            background: var(--success);
+        }
+
+        .offline {
+            background: var(--gray);
+        }
+
+        .away {
+            background: var(--warning);
+        }
+
+        /* Chat Area */
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .chat-header {
+            padding: 20px;
+            border-bottom: 1px solid #f3f4f6;
+            display: flex;
+            align-items: center;
+        }
+
+        .chat-title {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .chat-status {
+            font-size: 14px;
+            color: var(--gray);
+            margin-left: 10px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            max-height: 500px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message-incoming {
+            background: #f3f4f6;
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+
+        .message-outgoing {
+            background: var(--primary);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message-sender {
+            font-weight: 700;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .message-time {
+            font-size: 12px;
+            opacity: 0.8;
+            align-self: flex-end;
+            margin-top: 5px;
+        }
+
+        .chat-input-container {
+            padding: 20px;
+            border-top: 1px solid #f3f4f6;
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 24px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .chat-input:focus {
+            border-color: var(--primary);
+        }
+
+        .send-btn {
+            background: var(--primary);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .send-btn:hover {
+            background: var(--primary-light);
+        }
+
+        /* Login Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            width: 400px;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+            }
+
+            .message {
+                max-width: 85%;
+            }
+        }
+
+        /* Animation for new messages */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message {
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* Scrollbar styling */
+        .chat-messages::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: var(--primary-light);
+            border-radius: 4px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: var(--primary);
+        }
+
+        /* Typing indicator */
+        .typing-indicator {
+            background: #f3f4f6;
+            padding: 12px 16px;
+            border-radius: 18px;
+            align-self: flex-start;
+            margin-bottom: 5px;
+            display: none;
+        }
+
+        .typing-indicator span {
+            height: 8px;
+            width: 8px;
+            background: var(--gray);
+            display: inline-block;
+            border-radius: 50%;
+            margin-right: 5px;
+            animation: typing 1.3s infinite;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-comments"></i>
+                    <span>ChatApp</span>
+                </div>
+                <div class="user-controls">
+                    <div class="user-info">
+                        <div class="user-avatar">JS</div>
+                        <span id="username-display">John Smith</span>
+                    </div>
+                    <button class="btn btn-outline" id="logout-btn">Logout</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="main-content">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <div class="sidebar-section">
+                    <h3 class="sidebar-title">Chat Rooms</h3>
+                    <ul class="room-list">
+                        <li class="room-item active" data-room="general">
+                            <i class="fas fa-hashtag"></i>
+                            <span>General</span>
+                        </li>
+                        <li class="room-item" data-room="technology">
+                            <i class="fas fa-hashtag"></i>
+                            <span>Technology</span>
+                        </li>
+                        <li class="room-item" data-room="gaming">
+                            <i class="fas fa-hashtag"></i>
+                            <span>Gaming</span>
+                        </li>
+                        <li class="room-item" data-room="music">
+                            <i class="fas fa-hashtag"></i>
+                            <span>Music</span>
+                        </li>
+                        <li class="room-item" data-room="movies">
+                            <i class="fas fa-hashtag"></i>
+                            <span>Movies</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="sidebar-section">
+                    <h3 class="sidebar-title">Online Users (4)</h3>
+                    <ul class="user-list">
+                        <li class="user-item">
+                            <div class="user-avatar-sm">JS</div>
+                            <span>John Smith</span>
+                            <div class="status-indicator online"></div>
+                        </li>
+                        <li class="user-item">
+                            <div class="user-avatar-sm">EM</div>
+                            <span>Emma Miller</span>
+                            <div class="status-indicator online"></div>
+                        </li>
+                        <li class="user-item">
+                            <div class="user-avatar-sm">AD</div>
+                            <span>Alex Davis</span>
+                            <div class="status-indicator away"></div>
+                        </li>
+                        <li class="user-item">
+                            <div class="user-avatar-sm">SJ</div>
+                            <span>Sarah Johnson</span>
+                            <div class="status-indicator online"></div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Chat Area -->
+            <div class="chat-container">
+                <div class="chat-header">
+                    <h2 class="chat-title">General Chat</h2>
+                    <span class="chat-status">4 users online</span>
+                </div>
+
+                <div class="chat-messages" id="chat-messages">
+                    <!-- Messages will be added here dynamically -->
+                </div>
+
+                <div class="typing-indicator" id="typing-indicator">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+
+                <div class="chat-input-container">
+                    <input type="text" class="chat-input" id="message-input" placeholder="Type your message...">
+                    <button class="send-btn" id="send-btn">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Modal (shown by default) -->
+    <div class="modal" id="login-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Join ChatApp</h2>
+                <p>Enter your username to start chatting</p>
+            </div>
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" class="form-control" id="username" placeholder="Enter your username">
+            </div>
+            <button class="btn btn-primary" id="join-chat" style="width: 100%;">Join Chat</button>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const loginModal = document.getElementById('login-modal');
+        const usernameInput = document.getElementById('username');
+        const joinChatBtn = document.getElementById('join-chat');
+        const usernameDisplay = document.getElementById('username-display');
+        const logoutBtn = document.getElementById('logout-btn');
+        const messageInput = document.getElementById('message-input');
+        const sendBtn = document.getElementById('send-btn');
+        const chatMessages = document.getElementById('chat-messages');
+        const roomItems = document.querySelectorAll('.room-item');
+        const typingIndicator = document.getElementById('typing-indicator');
+
+        // Sample messages for demonstration
+        const sampleMessages = [
+            { sender: "Emma Miller", text: "Hey everyone! How's it going?", time: "10:05 AM" },
+            { sender: "Alex Davis", text: "Good morning! Just having my coffee ☕", time: "10:07 AM" },
+            { sender: "Sarah Johnson", text: "Anyone working on anything exciting today?", time: "10:12 AM" },
+            { sender: "John Smith", text: "I'm working on a new web project. It's a real-time chat app!", time: "10:15 AM" }
+        ];
+
+        // AI Responses based on context
+        const aiResponses = {
+            general: [
+                "That's interesting!",
+                "I was thinking the same thing!",
+                "Thanks for sharing that.",
+                "Can you tell me more about it?",
+                "I agree with you on this.",
+                "That's a great point!",
+                "I've been wondering about that too.",
+                "What does everyone else think about this?",
+                "I've had a similar experience.",
+                "That's really helpful information."
+            ],
+            technology: [
+                "I've been reading about that new technology too!",
+                "The future of tech looks really promising.",
+                "Have you tried the latest version?",
+                "I'm curious about how that compares to other solutions.",
+                "Security is a big concern with that technology.",
+                "The development community seems excited about this.",
+                "I wonder what the next innovation will be.",
+                "That could really change how we work.",
+                "I'm waiting for the price to come down before trying it.",
+                "The specs on that are really impressive."
+            ],
+            gaming: [
+                "I've been playing that game too!",
+                "The graphics in that game are amazing.",
+                "What's your favorite level so far?",
+                "I found that boss really challenging.",
+                "Have you tried the multiplayer mode?",
+                "I'm waiting for the sequel to come out.",
+                "The storyline in that game is incredible.",
+                "I need to upgrade my system to play that.",
+                "The controls take some getting used to.",
+                "That game has such an active modding community."
+            ],
+            music: [
+                "I love that artist too!",
+                "Their latest album is amazing.",
+                "Have you been to any of their concerts?",
+                "That genre has been evolving a lot recently.",
+                "The production quality on that track is incredible.",
+                "I've been discovering a lot of new music lately.",
+                "What other artists do you like in that genre?",
+                "The lyrics in that song are so meaningful.",
+                "I've had that song on repeat all week.",
+                "That band has such a unique sound."
+            ],
+            movies: [
+                "I saw that movie last weekend!",
+                "The cinematography was stunning.",
+                "That actor gave an amazing performance.",
+                "The plot twist caught me by surprise.",
+                "The sequel is supposed to come out next year.",
+                "The director has a unique style.",
+                "I've been waiting for that to stream.",
+                "The special effects were groundbreaking.",
+                "That franchise has such dedicated fans.",
+                "The soundtrack really stood out to me."
+            ]
+        };
+
+        // Current room
+        let currentRoom = "general";
+
+        // Initialize chat with sample messages
+        function initializeChat() {
+            sampleMessages.forEach(msg => {
+                addMessageToChat(msg.sender, msg.text, msg.time, msg.sender !== "John Smith");
+            });
+        }
+
+        // Add message to chat
+        function addMessageToChat(sender, text, time, isIncoming = true) {
+            const messageEl = document.createElement('div');
+            messageEl.classList.add('message');
+            messageEl.classList.add(isIncoming ? 'message-incoming' : 'message-outgoing');
+            
+            messageEl.innerHTML = `
+                <div class="message-sender">${sender}</div>
+                <div class="message-text">${text}</div>
+                <div class="message-time">${time}</div>
+            `;
+            
+            chatMessages.appendChild(messageEl);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Get current time in HH:MM format
+        function getCurrentTime() {
+            const now = new Date();
+            return now.getHours().toString().padStart(2, '0') + ':' + 
+                   now.getMinutes().toString().padStart(2, '0');
+        }
+
+        // Show typing indicator
+        function showTypingIndicator() {
+            typingIndicator.style.display = 'block';
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Hide typing indicator
+        function hideTypingIndicator() {
+            typingIndicator.style.display = 'none';
+        }
+
+        // Generate AI response based on message content and room
+        function generateAIResponse(message, room) {
+            // Simple keyword matching for more contextual responses
+            const lowerMessage = message.toLowerCase();
+            
+            if (lowerMessage.includes('?')) {
+                if (lowerMessage.includes('how')) {
+                    return "That's a great question. Based on my experience, it usually depends on several factors.";
+                } else if (lowerMessage.includes('what')) {
+                    return "I've been wondering about that too. From what I've read, there are several perspectives.";
+                } else if (lowerMessage.includes('why')) {
+                    return "That's an interesting question. There could be several reasons for that.";
+                }
+            }
+            
+            if (lowerMessage.includes('good') || lowerMessage.includes('great') || lowerMessage.includes('awesome')) {
+                return "I'm glad to hear that! It's always nice when things go well.";
+            }
+            
+            if (lowerMessage.includes('bad') || lowerMessage.includes('terrible') || lowerMessage.includes('sucks')) {
+                return "Sorry to hear that. Is there anything I can do to help?";
+            }
+            
+            if (lowerMessage.includes('thank')) {
+                return "You're welcome! Happy to help.";
+            }
+            
+            // Default to random room-specific response
+            const responses = aiResponses[room];
+            return responses[Math.floor(Math.random() * responses.length)];
+        }
+
+        // Join chat event
+        joinChatBtn.addEventListener('click', () => {
+            const username = usernameInput.value.trim();
+            if (username) {
+                usernameDisplay.textContent = username;
+                loginModal.style.display = 'none';
+                initializeChat();
+                
+                // Simulate a welcome message
+                setTimeout(() => {
+                    addMessageToChat("System", `Welcome to the chat, ${username}!`, getCurrentTime(), true);
+                }, 1000);
+            }
+        });
+
+        // Send message event
+        function sendMessage() {
+            const message = messageInput.value.trim();
+            if (message) {
+                addMessageToChat(usernameDisplay.textContent, message, getCurrentTime(), false);
+                messageInput.value = '';
+                
+                // Show typing indicator
+                showTypingIndicator();
+                
+                // Generate and show AI response after a delay
+                setTimeout(() => {
+                    hideTypingIndicator();
+                    const aiResponse = generateAIResponse(message, currentRoom);
+                    const randomUser = ["Emma Miller", "Alex Davis", "Sarah Johnson"][Math.floor(Math.random() * 3)];
+                    
+                    addMessageToChat(randomUser, aiResponse, getCurrentTime(), true);
+                }, 1500 + Math.random() * 2000);
+            }
+        }
+
+        sendBtn.addEventListener('click', sendMessage);
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // Logout event
+        logoutBtn.addEventListener('click', () => {
+            loginModal.style.display = 'flex';
+            chatMessages.innerHTML = '';
+        });
+
+        // Room selection event
+        roomItems.forEach(item => {
+            item.addEventListener('click', () => {
+                roomItems.forEach(room => room.classList.remove('active'));
+                item.classList.add('active');
+                
+                const roomName = item.querySelector('span').textContent;
+                currentRoom = item.getAttribute('data-room');
+                document.querySelector('.chat-title').textContent = `${roomName} Chat`;
+                
+                // Clear chat and add a room-specific message
+                chatMessages.innerHTML = '';
+                addMessageToChat("System", `You joined the ${roomName} room.`, getCurrentTime(), true);
+                
+                // Add a room-specific AI message
+                setTimeout(() => {
+                    const roomMessages = {
+                        general: "Welcome to the general chat! How is everyone doing today?",
+                        technology: "Tech enthusiasts unite! What's the latest gadget you've been excited about?",
+                        gaming: "Hey gamers! What have you been playing lately?",
+                        music: "Music lovers here! Discovered any new artists recently?",
+                        movies: "Movie buffs assemble! Seen any good films lately?"
+                    };
+                    
+                    const randomUser = ["Emma Miller", "Alex Davis", "Sarah Johnson"][Math.floor(Math.random() * 3)];
+                    addMessageToChat(randomUser, roomMessages[currentRoom], getCurrentTime(), true);
+                }, 1000);
+            });
+        });
+
+        // Close modal if clicked outside
+        window.addEventListener('click', (e) => {
+            if (e.target === loginModal) {
+                loginModal.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
